@@ -24,12 +24,11 @@ UIBuilder:add([obj])
 You can add your own objects
 ```lua
 local obj = display.newImage("img.png")
-
 UIBuilder:add(obj)
 ```
 or create basic objects such as groups, images, geometry figures, etc
 ```lua
-UIBuilder:addImage("img")
+UIBuilder:addImage("img.png")
 ```
 
 UIBuilder works with one object at the time. When You write
@@ -142,3 +141,67 @@ UIBuilder:addGroup()
 		
 	:gotoParent()
 ```
+## Functions
+### Adding objects
+#### Groups
+```lua
+UIBuilder:addGroup()
+```
+#### Images
+```lua
+UIBuilder:addImage(path)
+```
+#### Geometry
+```lua
+UIBuilder:addRect(width, height)
+UIBuilder:addCircle(radius)
+UIBuilder:addRoundedRect(width, height, radius)
+```
+#### Text
+```lua
+UIBuilder:addText(text, font, size, width, height, align)
+```
+#### Custom objects
+```lua
+UIBuilder:add(obj)
+```
+### Commands
+#### Transform
+```lua
+:position(x, y)
+:scale(value)
+:scaleX(value)
+:scaleY(value)
+:anchor(x, y)
+:fitX(width) -- Changes object scale to fit given width
+:fitY(height) -- Changes object scale to fit given height
+:fitXY(width, height) -- Changes object scale to fit given width and height
+:fitTextX(width) -- Changes text font size to fit given width
+```
+#### Color
+```lua
+:alpha(value)
+:fillColor(r, g, b, a)
+:textColor(r, g, b, a)
+:fill(paint) -- fills using Paint Object
+```
+### Navigation
+#### Basic
+```lua
+UIBuilder:gotoParent()
+UIBuilder:gotoRoot() -- navigates to chain 'root' object
+```
+#### Tag navigation
+```lua
+...
+:setTag(tag)
+...
+UIBuilder:getObjectByTag(tag)
+UIBuilder:gotoObject(tag)
+...
+```
+#### Other
+```lua
+UIBuilder:getCurrentObject() -- returns chain 'current object'
+```
+
