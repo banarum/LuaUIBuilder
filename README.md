@@ -185,6 +185,12 @@ UIBuilder:add(obj)
 :textColor(r, g, b, a)
 :fill(paint) -- fills using Paint Object
 ```
+#### Other
+```lua:iftrue(flag)
+...
+:endif()
+:removeChildren() -- removes all group children
+```
 ### Navigation
 #### Basic
 ```lua
