@@ -104,6 +104,15 @@ function new()
     end
 	return self
   end
+  
+  function this:addCircle(radius)
+    if self.c.allowed then
+    	local circle = display.newCircle(0,0,radius)
+    	self.c.currObj:insert(circle)
+    	self.c.currObj = circle
+    end
+	return self
+  end
 
   function this:addRoundedRect(width, height, radius)
     if self.c.allowed then
