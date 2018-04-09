@@ -186,7 +186,8 @@ UIBuilder:add(obj)
 :fill(paint) -- fills using Paint Object
 ```
 #### Other
-```lua:iftrue(flag)
+```lua
+:iftrue(flag)
 ...
 :endif()
 :removeChildren() -- removes all group children
