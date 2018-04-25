@@ -104,7 +104,7 @@ function new()
     end
 	return self
   end
-  
+
   function this:addCircle(radius)
     if self.c.allowed then
     	local circle = display.newCircle(0,0,radius)
@@ -170,6 +170,22 @@ function new()
   function this:fillColor(r,g,b,a)
     if self.c.allowed then
     	self.c.currObj:setFillColor(r,g,b,a)
+    end
+	return self
+  end
+
+  function this:fillColorRGB(color, alpha)
+    if self.c.allowed then
+        local color_obj = self.c:getRGBcolor(color)
+    	self.c.currObj:setFillColor(color_obj[1],color_obj[2],color_obj[3],alpha)
+    end
+	return self
+  end
+
+  function this:textColorRGB(color,alpha)
+    if self.c.allowed then
+        local color_obj = self.c:getRGBcolor(color)
+    	self.c.currObj:setTextColor(color_obj[1],color_obj[2],color_obj[3],alpha)
     end
 	return self
   end
@@ -240,6 +256,43 @@ function new()
   function this:getObjectByTag(tag)
 	return self.c.tags[tag]
 end
+
+function this.c:HEXtoDEC(hex)
+	  hex = string.upper( hex )
+	  local dec = 0
+	  for i=1,#hex do
+		  local byte = string.byte( hex, #hex-i+1 )
+		  if byte>=string.byte( "A", 1 ) then
+			  byte = byte - string.byte( "A", 1 ) + 10
+		  else
+			  byte = byte - string.byte( "0", 1 )
+		  end
+		  dec = dec+byte*math.pow(16, i-1)
+	  end
+	  return dec
+  end
+
+  function this.c:getRGBcolor(color)
+	  color = color or ""
+	  local offset = 0
+	  if string.sub(color, 1, 2)=="0x" then
+		  offset = 2
+	  elseif string.sub(color, 1, 1)=="#" then
+		  offset = 1
+	  else
+		  return {0,0,0}
+	  end
+	  if #color-offset~=6 then
+		  return {0,0,0}
+	  end
+	  local hex_r = string.sub(color, offset+1, offset+2)
+	  local hex_g = string.sub(color, offset+3, offset+4)
+	  local hex_b  = string.sub(color, offset+5, offset+6)
+	  local r = self:HEXtoDEC(hex_r)/255
+	  local g = self:HEXtoDEC(hex_g)/255
+	  local b = self:HEXtoDEC(hex_b)/255
+	  return {r,g,b}
+  end
 
   return this
 end
