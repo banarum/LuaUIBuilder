@@ -182,7 +182,9 @@ UIBuilder:add(obj)
 ```lua
 :alpha(value)
 :fillColor(r, g, b, a)
+:fillColorRGB(color, alpha) -- supports HEX colors '#RRGGBB'
 :textColor(r, g, b, a)
+:textColorRGB(color, alpha) -- supports HEX colors '#RRGGBB'
 :fill(paint) -- fills using Paint Object
 ```
 #### Other
