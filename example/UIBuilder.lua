@@ -2,67 +2,110 @@
 module(..., package.seeall);
 
 function new()
-  local this = {c={tags={}, allowed=true}}
+    local this = {c={tags={}}}
 
-  function this:setRoot(grp)
-    if self.c.allowed then
+    function this:setRoot(grp)
+        if not grp or not grp.removeSelf then
+            error("Invalid root container", 2)
+        end
         self.c.root = grp
         self.c.currObj = grp
+        return self
     end
-    return self
-  end
 
-  function this:setTag(tag)
-    if self.c.allowed then
+    function this:setTag(tag)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if type(tag)~="string" then
+            error("Invalid object tag", 2)
+        end
         self.c.tags[tag] = self.c.currObj
+        return self
     end
-    return self
-  end
 
-  function this:gotoObject(tag)
-    if self.c.allowed then
+    function this:inject(view, params)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if not view.new then
+            error("Invalid View", 2)
+        end
+        view.new(self, params)
+        return self
+    end
+
+    function this:gotoObject(tag)
+        if type(tag)~="string" then
+            error("Invalid tag", 2)
+        end
+        if not self.c.tags[tag] then
+            error("Object doesn't exist", 2)
+        end
         self.c.currObj = self.c.tags[tag]
+        return self
     end
-    return self
-  end
 
-  function this:gotoRoot()
-     if self.c.allowed then
+    function this:jumpTo(obj)
+        if not obj or not obj.removeSelf then
+            error("Invalid object", 2)
+        end
+        self.c.currObj = obj
+        return self
+    end
+
+    function this:gotoRoot()
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
         self.c.currObj = self.c.root
+        return self
     end
-    return self
-  end
 
-  function this:removeChildren()
-    if self.c.allowed then
-    	while (self.c.currObj.numChildren>0) do
-    		self.c.currObj[1]:removeSelf()
-    	end
+    function this:removeChildren()
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if self.c.currObj.numChildren==nil then
+            error("Invalid object. Only Display Groups can contain children", 2)
+        end
+        while (self.c.currObj.numChildren>0) do
+            self.c.currObj[1]:removeSelf()
+        end
+        return self
     end
-	return self
-  end
 
-  function this:addGroup()
-    if self.c.allowed then
+    function this:addGroup()
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
         local grp = display.newGroup()
         self.c.currObj:insert(grp)
         self.c.currObj = grp
+        return self
     end
-    return self
-  end
 
-  function this:addImage(path)
-    if self.c.allowed then
-        local img = display.newImage(path)
+    function this:addImage(path, dir)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        local img = display.newImage(path, dir)
+        if not img then
+            error("Image not found", 2)
+        end
         self.c.currObj:insert(img)
         self.c.currObj = img
+        return self
     end
-    return self
-  end
 
-  function this:addText(text, font, size, width, height, align)
-    if self.c.allowed then
-    	local txt = display.newText({
+    function this:addText(text, font, size, width, height, align)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if not text or (type(text)~="string" and type(text)~="number") then
+            error("Invalid text", 2)
+        end
+        local txt = display.newText({
             text = text,
             x = 0,
             y = 0,
@@ -72,227 +115,343 @@ function new()
             fontSize = size,
             align = align
         })
-    	self.c.currObj:insert(txt)
-    	self.c.currObj = txt
+        self.c.currObj:insert(txt)
+        self.c.currObj = txt
+        return self
     end
-	return self
-  end
 
-  function this:add(obj)
-    if self.c.allowed then
-    	self.c.currObj:insert(obj)
-    	self.c.currObj = obj
+    function this:add(obj)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if not obj or not obj.removeSelf then
+            error("Invalid object",2 )
+        end
+        self.c.currObj:insert(obj)
+        self.c.currObj = obj
+        return self
     end
-	return self
-  end
 
-  function this:iftrue(condition)
-     self.c.allowed = condition
-     return self
-  end
-
-  function this:endif()
-      self.c.allowed = true
-      return self
-  end
-
-  function this:addRect(width, height)
-    if self.c.allowed then
-    	local rect = display.newRect(0,0,width, height)
-    	self.c.currObj:insert(rect)
-    	self.c.currObj = rect
+    function this:addRect(width, height)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if not width or not height then
+            error("Invalid width or height", 2)
+        end
+        local rect = display.newRect(0,0,width, height)
+        self.c.currObj:insert(rect)
+        self.c.currObj = rect
+        return self
     end
-	return self
-  end
 
-  function this:addCircle(radius)
-    if self.c.allowed then
-    	local circle = display.newCircle(0,0,radius)
-    	self.c.currObj:insert(circle)
-    	self.c.currObj = circle
+    function this:onTap(action)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if not action or type(action)~="function" then
+            error("Invalid action", 2)
+        end
+        self.c.currObj:addEventListener("tap", action)
+        return self
     end
-	return self
-  end
 
-  function this:addRoundedRect(width, height, radius)
-    if self.c.allowed then
-    	local rect = display.newRoundedRect(0,0,width, height, radius)
-    	self.c.currObj:insert(rect)
-    	self.c.currObj = rect
+    function this:strokeWidth(value)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.strokeWidth = value
+        return self
     end
-	return self
-  end
 
-  function this:anchor(x, y)
-    if self.c.allowed then
-    	self.c.currObj.anchorX = x
-    	self.c.currObj.anchorY = y
+    function this:strokeColor(r, g, b, a)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj:setStrokeColor( r, g ,b, a )
+        return self
     end
-	return self
-  end
 
-  function this:fitTextX(sizeX)
-      if self.c.allowed then
-          while self.c.currObj.contentWidth>sizeX do
-              self.c.currObj.size = self.c.currObj.size-1
-          end
-      end
-      return self
-  end
+    function this:isVisible(flag)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.isVisible = flag
+        return self
+    end
 
-  function this:fitXY(sizeX, sizeY)
-    if self.c.allowed then
+    function this:strokeColorRGB(color, alpha)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        local color_obj = self.c:getRGBcolor(color)
+        color_obj[4] = alpha
+        self.c.currObj:setStrokeColor(unpack(color_obj))
+        return self
+    end
+
+    function this:addCircle(radius)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        local circle = display.newCircle(0,0,radius)
+        self.c.currObj:insert(circle)
+        self.c.currObj = circle
+        return self
+    end
+
+    function this:addRoundedRect(width, height, radius)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        local rect = display.newRoundedRect(0,0,width, height, radius)
+        self.c.currObj:insert(rect)
+        self.c.currObj = rect
+        return self
+    end
+
+    function this:anchor(x, y)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.anchorX = x
+        self.c.currObj.anchorY = y
+        return self
+    end
+
+    function this:fitTextX(sizeX)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        while self.c.currObj.contentWidth>sizeX do
+            self.c.currObj.size = self.c.currObj.size-1
+        end
+        return self
+    end
+
+    function this:fitXY(sizeX, sizeY)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
         local ratio = self.c.currObj.contentWidth/self.c.currObj.contentHeight
         local new_width = math.min(sizeX, sizeY*ratio)
         local new_scale = new_width/self.c.currObj.contentWidth
-    	self.c.currObj.xScale = new_scale
-    	self.c.currObj.yScale = new_scale
+        self.c.currObj.xScale = new_scale
+        self.c.currObj.yScale = new_scale
+        return self
     end
-	return self
-  end
 
-  function this:fitX(size)
-    if self.c.allowed then
-    	self.c.currObj.xScale = size/self.c.currObj.contentWidth
-    	self.c.currObj.yScale = self.c.currObj.xScale
+    function this:fitX(size)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.xScale = size/self.c.currObj.contentWidth
+        self.c.currObj.yScale = self.c.currObj.xScale
+        return self
     end
-	return self
-  end
 
-  function this:fitY(size)
-    if self.c.allowed then
-    	self.c.currObj.yScale = size/self.c.currObj.contentHeight
-    	self.c.currObj.xScale = self.c.currObj.yScale
+    function this:fitY(size)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.yScale = size/self.c.currObj.contentHeight
+        self.c.currObj.xScale = self.c.currObj.yScale
+        return self
     end
-	return self
-  end
 
-  function this:fillColor(r,g,b,a)
-    if self.c.allowed then
-    	self.c.currObj:setFillColor(r,g,b,a)
+    function this:rotation(angle)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.rotation = angle
+        return self
     end
-	return self
-  end
 
-  function this:fillColorRGB(color, alpha)
-    if self.c.allowed then
+    function this:fillColor(r,g,b,a)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj:setFillColor(r,g,b,a)
+        return self
+    end
+
+    function this:fillColorRGB(color, alpha)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
         local color_obj = self.c:getRGBcolor(color)
-    	self.c.currObj:setFillColor(color_obj[1],color_obj[2],color_obj[3],alpha)
+        color_obj[4] = alpha
+        self.c.currObj:setFillColor(unpack(color_obj))
+        return self
     end
-	return self
-  end
 
-  function this:textColorRGB(color,alpha)
-    if self.c.allowed then
+    function this:textColorRGB(color,alpha)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
         local color_obj = self.c:getRGBcolor(color)
-    	self.c.currObj:setTextColor(color_obj[1],color_obj[2],color_obj[3],alpha)
+        color_obj[4] = alpha
+        self.c.currObj:setTextColor(unpack(color_obj))
+        return self
     end
-	return self
-  end
 
-  function this:textColor(r,g,b,a)
-    if self.c.allowed then
-    	self.c.currObj:setTextColor(r,g,b,a)
+    function this:text(text)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if not text or (type(text)~="string" and type(text)~="number") then
+            error("Invalid text", 2)
+        end
+        self.c.currObj.text = text
+        return self
     end
-	return self
-  end
 
-  function this:gotoParent()
-    if self.c.allowed then
-    	self.c.currObj = self.c.currObj.parent
+    function this:textColor(r,g,b,a)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj:setTextColor(r,g,b,a)
+        return self
     end
-	return self
-  end
 
-  function this:fill(paint)
-    if self.c.allowed then
-	    self.c.currObj.fill = paint
+    function this:gotoParent()
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if self.c.currObj==self.c.root then
+            error("Pointer can't go behind root object", 2)
+        end
+        self.c.currObj = self.c.currObj.parent
+        return self
     end
-	return self
-  end
+
+    function this:fill(paint)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.fill = paint
+        return self
+    end
 
 
-  function this:position(x,y)
-    if self.c.allowed then
+    function this:position(x,y)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
         self.c.currObj.x = x
         self.c.currObj.y = y
+        return self
     end
-    return self
-  end
 
-  function this:alpha(value)
-    if self.c.allowed then
-       self.c.currObj.alpha = value
+    function this:alpha(value)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.alpha = value
+        return self
     end
-	return self
-  end
 
-  function this:scale(scale)
-    if self.c.allowed then
-		self.c.currObj.xScale = scale
-		self.c.currObj.yScale = scale
-    end
-    return self
-  end
-
-  function this:scaleX(scale)
-    if self.c.allowed then
-	    self.c.currObj.xScale = scale
-    end
-    return self
-  end
-
-  function this:scaleY(scale)
-    if self.c.allowed then
+    function this:scale(scale)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.xScale = scale
         self.c.currObj.yScale = scale
+        return self
     end
-    return self
-  end
 
-  function this:getCurentObject()
-	return self.c.currObj
-  end
+    function this:scaleX(scale)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.xScale = scale
+        return self
+    end
 
-  function this:getObjectByTag(tag)
-	return self.c.tags[tag]
-end
+    function this:scaleY(scale)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.yScale = scale
+        return self
+    end
 
-function this.c:HEXtoDEC(hex)
-	  hex = string.upper( hex )
-	  local dec = 0
-	  for i=1,#hex do
-		  local byte = string.byte( hex, #hex-i+1 )
-		  if byte>=string.byte( "A", 1 ) then
-			  byte = byte - string.byte( "A", 1 ) + 10
-		  else
-			  byte = byte - string.byte( "0", 1 )
-		  end
-		  dec = dec+byte*math.pow(16, i-1)
-	  end
-	  return dec
-  end
+    function this:textSize(value)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj.size = value
+        return self
+    end
 
-  function this.c:getRGBcolor(color)
-	  color = color or ""
-	  local offset = 0
-	  if string.sub(color, 1, 2)=="0x" then
-		  offset = 2
-	  elseif string.sub(color, 1, 1)=="#" then
-		  offset = 1
-	  else
-		  return {0,0,0}
-	  end
-	  if #color-offset~=6 then
-		  return {0,0,0}
-	  end
-	  local hex_r = string.sub(color, offset+1, offset+2)
-	  local hex_g = string.sub(color, offset+3, offset+4)
-	  local hex_b  = string.sub(color, offset+5, offset+6)
-	  local r = self:HEXtoDEC(hex_r)/255
-	  local g = self:HEXtoDEC(hex_g)/255
-	  local b = self:HEXtoDEC(hex_b)/255
-	  return {r,g,b}
-  end
+    function this:setObject(obj)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        self.c.currObj = obj
+        return self
+    end
 
-  return this
+    function this:trimText(width)
+        if not self.c.root then
+            error("Chain has no root object", 2)
+        end
+        if self.c.currObj.contentWidth>width then
+            local text = self.c.currObj.text
+            local trigs = 0
+            while self.c.currObj.contentWidth>width and trigs<20000 do
+                trigs=trigs+1
+                text = string.sub(text, 1, -2)
+                self.c.currObj.text = text.."..."
+            end
+        end
+        return self
+    end
+
+    function this:getCurrentObject()
+        return self.c.currObj
+    end
+
+    function this:getObjectByTag(tag)
+        return self.c.tags[tag]
+    end
+
+    function this.c:HEXtoDEC(hex)
+        hex = string.upper( hex )
+        local dec = 0
+        for i=1,#hex do
+            local byte = string.byte( hex, #hex-i+1 )
+            if byte>=string.byte( "A", 1 ) then
+                byte = byte - string.byte( "A", 1 ) + 10
+            else
+                byte = byte - string.byte( "0", 1 )
+            end
+            dec = dec+byte*math.pow(16, i-1)
+        end
+        return dec
+    end
+
+    function this.c:getRGBcolor(color)
+        color = color or ""
+        local offset = 0
+        if string.sub(color, 1, 2)=="0x" then
+            offset = 2
+        elseif string.sub(color, 1, 1)=="#" then
+            offset = 1
+        else
+            return {0,0,0}
+        end
+        if #color-offset~=6 then
+            return {0,0,0}
+        end
+        local hex_r = string.sub(color, offset+1, offset+2)
+        local hex_g = string.sub(color, offset+3, offset+4)
+        local hex_b  = string.sub(color, offset+5, offset+6)
+        local r = self:HEXtoDEC(hex_r)/255
+        local g = self:HEXtoDEC(hex_g)/255
+        local b = self:HEXtoDEC(hex_b)/255
+        return {r,g,b}
+    end
+
+    return this
 end
