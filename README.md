@@ -82,15 +82,6 @@ Also you can set current chain entry point
 UIBuilder:gotoObject("my_tag")
   ...
 ```
-### Features
-if you need 'if' statement in UI chain, you can
-```lua
-UIBuilder:add(myObj)
-  :iftrue(flag)
-  ...
-  :endif()
-  ...
-```
 ## Examples
 ### Lets have a look on how standart CoronaSDK UI code looks like
 ```lua
@@ -149,7 +140,7 @@ UIBuilder:addGroup()
 ```
 #### Images
 ```lua
-UIBuilder:addImage(path)
+UIBuilder:addImage(path, dir)
 ```
 #### Geometry
 ```lua
@@ -173,26 +164,34 @@ UIBuilder:add(obj)
 :scaleX(value)
 :scaleY(value)
 :anchor(x, y)
+:rotation(angle)
 :fitX(width) -- Changes object scale to fit given width
 :fitY(height) -- Changes object scale to fit given height
 :fitXY(width, height) -- Changes object scale to fit given width and height
 :fitTextX(width) -- Changes text font size to fit given width
+:isVisible(flag) -- Changes object visibility
 ```
 #### Color
 ```lua
 :alpha(value)
 :fillColor(r, g, b, a)
 :fillColorRGB(color, alpha) -- supports HEX colors '#RRGGBB'
+:strokeColor(r, g, b, a)
+:strokeColorRGB(color, alpha) -- supports HEX colors '#RRGGBB'
 :textColor(r, g, b, a)
 :textColorRGB(color, alpha) -- supports HEX colors '#RRGGBB'
 :fill(paint) -- fills using Paint Object
 ```
+#### Text
+```lua
+:text(text) -- sets text field for TextField objects
+:trimText(width) -- trims string by cutting it's letters and puts '...' in the end
+:textSize(value)
+```
 #### Other
 ```lua
-:iftrue(flag)
-...
-:endif()
 :removeChildren() -- removes all group children
+:onTap(action) -- performes action when object is tapped
 ```
 ### Navigation
 #### Basic
@@ -212,5 +211,7 @@ UIBuilder:gotoObject(tag)
 #### Other
 ```lua
 UIBuilder:getCurrentObject() -- returns chain 'current object'
+UIBuilder:inject(view, params) -- calls view.new(UIBuilder, params) could be usefull for multiple views structure
+UIBuilder:jumpTo(object) -- jumps to object inside or outside of chain, not recommendend to use
 ```
 
